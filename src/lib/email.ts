@@ -1,10 +1,11 @@
 import { Resend } from "resend";
 
-if (!process.env.RESEND_API_KEY) {
-  throw new Error("RESEND_API_KEY não definida. Configure a variável de ambiente.");
+function getResend(): Resend {
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error("RESEND_API_KEY não definida. Configure a variável de ambiente.");
+  }
+  return new Resend(process.env.RESEND_API_KEY);
 }
-
-const resend = new Resend(process.env.RESEND_API_KEY);
 
 const RECIPIENTS = ["contato@cliklink.com.br", "Guilherme.oliveira@cliklink.com.br"];
 const FROM = "ClikLink <noreply@cliklink.com.br>";
@@ -149,7 +150,7 @@ export async function sendContatoEmail(data: ContatoEmailData) {
       </tr>
     </table>`;
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to: RECIPIENTS,
     replyTo: data.email,
@@ -247,7 +248,7 @@ export async function sendAssinaturaEmail(data: AssinaturaEmailData) {
       </tr>
     </table>`;
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to: RECIPIENTS,
     replyTo: data.email,
