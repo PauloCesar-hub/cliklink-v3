@@ -224,10 +224,6 @@ const FAQS = [
     a: "É simples: entre em contato pelo WhatsApp, ligue para (16) 3014-8884 ou preencha o formulário no site. Nossa equipe entra em contato em até 24h para agendar a visita técnica. A instalação é feita pela nossa equipe local em Araraquara, sem custo adicional.",
   },
   {
-    q: "A instalação tem algum custo? E a fidelidade?",
-    a: "Não cobramos taxa de instalação e não exigimos fidelidade. Você pode cancelar quando quiser, sem multas. Basta entrar em contato com nossa equipe e cuidamos de tudo.",
-  },
-  {
     q: "Em quanto tempo a internet fica ativa após contratar?",
     a: "Após assinar, nossa equipe agenda a instalação geralmente em até 3 dias úteis. Em muitos casos conseguimos instalar ainda mais rápido — tudo depende da disponibilidade na sua região.",
   },

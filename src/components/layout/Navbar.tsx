@@ -8,7 +8,7 @@ import { Menu, X, UserCircle } from "lucide-react";
 import { cn, PORTAL_URL } from "@/lib/utils";
 
 const NAV_LINKS = [
-  { href: "/#planos", label: "Planos" },
+  { href: "/planos", label: "Planos" },
   { href: "/condominios", label: "Condomínios" },
   { href: "/celular", label: "Celular" },
   { href: "/suporte", label: "Suporte" },
@@ -29,10 +29,10 @@ export function Navbar() {
         {/* Logo real */}
         <Link href="/" aria-label="ClikLink Internet — ir para home">
           <Image
-            src="/logo-cliklink.png"
+            src="/logo-cliklinkSF.png"
             alt="ClikLink Internet"
-            width={150}
-            height={42}
+            width={190}
+            height={52}
             className="object-contain"
             priority
           />
