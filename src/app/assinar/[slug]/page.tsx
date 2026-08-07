@@ -22,9 +22,12 @@ function CondoPicker({ onSelect }: { onSelect: (c: typeof CONDOMINIOS[0] | null)
   const [selected, setSelected] = useState<typeof CONDOMINIOS[0] | null>(null);
   const ref = useRef<HTMLDivElement>(null);
 
-  const filtered = query.length >= 2
-    ? CONDOMINIOS.filter(c => c.nome.toLowerCase().includes(query.toLowerCase())).slice(0, 12)
-    : [];
+  const filtered = query.length === 0
+    ? CONDOMINIOS
+    : CONDOMINIOS.filter(c =>
+        c.nome.toLowerCase().includes(query.toLowerCase()) ||
+        c.bairro.toLowerCase().includes(query.toLowerCase())
+      );
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -65,7 +68,7 @@ function CondoPicker({ onSelect }: { onSelect: (c: typeof CONDOMINIOS[0] | null)
         }
       </div>
 
-      {open && filtered.length > 0 && (
+      {open && !selected && filtered.length > 0 && (
         <div className="absolute z-50 top-full mt-1 left-0 right-0 bg-[#1a1a1a] border border-[#333] rounded-xl overflow-hidden shadow-xl max-h-64 overflow-y-auto">
           {filtered.map(c => (
             <button

@@ -3,8 +3,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { Check, MessageCircle, Wifi, ChevronRight } from "lucide-react";
-import { Breadcrumb } from "@/components/ui/index";
+import { MessageCircle, Wifi, ChevronRight } from "lucide-react";
+import { Breadcrumb, PlanCard } from "@/components/ui/index";
 import { PLANOS } from "@/lib/planos";
 import { waMsg } from "@/lib/utils";
 import type { ChipSize } from "@/types";
@@ -12,102 +12,19 @@ import type { ChipSize } from "@/types";
 const internet = PLANOS.filter(p => p.categoria === "internet");
 
 type Tab = "sem-chip" | "15G" | "20G" | "25G";
-const TABS: { id: Tab; label: string; sub: string }[] = [
-  { id: "sem-chip", label: "Só Internet",  sub: "Planos sem chip celular" },
-  { id: "15G",      label: "+ Chip 15G",   sub: "Internet + 1 chip 15GB" },
-  { id: "20G",      label: "+ Chip 20G",   sub: "Internet + 1 chip 20GB" },
-  { id: "25G",      label: "+ Chip 25G",   sub: "Internet + 1 chip 25GB" },
+const TABS: { id: Tab; label: string }[] = [
+  { id: "sem-chip", label: "Só Internet" },
+  { id: "15G",      label: "+ Chip 15G"  },
+  { id: "20G",      label: "+ Chip 20G"  },
+  { id: "25G",      label: "+ Chip 25G"  },
 ];
 
 const SPEEDS = [
-  { v: "100", label: "100 Mega" },
-  { v: "300", label: "300 Mega" },
-  { v: "600", label: "600 Mega" },
-  { v: "1",   label: "1 Giga"  },
+  { v: "100", unit: "Megas" },
+  { v: "300", unit: "Megas" },
+  { v: "600", unit: "Megas" },
+  { v: "1",   unit: "Giga"  },
 ];
-
-function PlanCard({ plano }: { plano: (typeof PLANOS)[0] }) {
-  const hasTele = plano.badges.includes("e-saude");
-  const hasTV   = plano.badges.includes("tv");
-
-  return (
-    <div className={`relative flex flex-col rounded-2xl overflow-hidden border transition-all h-full ${
-      plano.featured
-        ? "border-[#F47B20] shadow-lg shadow-[#F47B20]/10 bg-[#1c1400]"
-        : "border-[#2a2a2a] bg-[#161616] hover:border-[#3a3a3a]"
-    }`}>
-
-      {plano.destaque && (
-        <div className={`text-center text-[11px] font-black py-1.5 tracking-widest uppercase ${
-          plano.featured ? "bg-[#F47B20] text-black" : "bg-[#222] text-[#F47B20]"
-        }`}>
-          {plano.destaque}
-        </div>
-      )}
-
-      <div className="flex flex-col flex-1 p-5">
-        {/* Velocidade */}
-        <div className="flex items-end gap-1 mb-1">
-          <span className="text-[44px] font-black leading-none text-[#F47B20]">{plano.velocidade}</span>
-          <span className="text-base font-bold text-[#555] mb-1">{plano.unidade}</span>
-        </div>
-
-        {/* Inclusos */}
-        <div className="flex flex-col gap-1 mb-4 mt-2">
-          {hasTele && (
-            <div className="flex items-center gap-2 text-emerald-400 bg-emerald-400/6 border border-emerald-400/15 rounded-lg px-2 py-1.5">
-              <div className="relative w-4 h-4 flex-shrink-0">
-                <Image src="/logos/logo-telemedicina.png" alt="e-Saude" fill className="object-contain" />
-              </div>
-              <span className="text-[10px] font-bold">e-Saude incluso</span>
-            </div>
-          )}
-          {hasTV && (
-            <div className="flex items-center gap-2 bg-[#111] border border-[#222] rounded-lg px-2 py-1.5">
-              <div className="relative w-12 h-4 flex-shrink-0">
-                <Image src="/logo-yplay.png" alt="YPlay TV" fill className="object-contain object-left" />
-              </div>
-              <span className="text-[10px] font-bold text-[#888]">TV inclusa</span>
-            </div>
-          )}
-        </div>
-
-        {/* Recursos */}
-        <ul className="flex flex-col gap-1.5 mb-5 flex-1">
-          {plano.recursos.map(r => (
-            <li key={r} className="flex items-start gap-2 text-[11px] text-[#aaa]">
-              <Check size={11} className="text-[#F47B20] flex-shrink-0 mt-0.5" />
-              {r}
-            </li>
-          ))}
-        </ul>
-
-        {/* Preço */}
-        <div className="mb-4 pt-4 border-t border-[#222]">
-          <div className="flex items-start gap-0.5">
-            <span className="text-xs font-bold text-[#777] mt-1.5">R$</span>
-            <span className="text-[40px] font-black leading-none text-white">
-              {Math.floor(plano.preco)}
-            </span>
-            <div className="flex flex-col mt-1.5 ml-0.5">
-              <span className="text-sm font-bold text-[#888]">,{plano.preco.toFixed(2).split(".")[1]}</span>
-              <span className="text-[9px] text-[#666]">/mês</span>
-            </div>
-          </div>
-        </div>
-
-        <a
-          href={waMsg(
-            `Olá, ClikLink! Tenho interesse no plano *${plano.nome}* — R$ ${plano.preco.toFixed(2).replace(".", ",")} por mês. Podem me passar mais detalhes e agendar a instalação?`
-          )}
-          target="_blank" rel="noopener noreferrer"
-          className={`btn w-full justify-center text-sm ${plano.featured ? "btn-primary" : "btn-outline"}`}>
-          Assinar agora
-        </a>
-      </div>
-    </div>
-  );
-}
 
 export default function PlanosPage() {
   const [tab, setTab] = useState<Tab>("sem-chip");
@@ -164,36 +81,49 @@ export default function PlanosPage() {
                   : "border-transparent text-[#444] hover:text-[#888]"
               }`}>
               {t.label}
-              <span className="hidden md:inline text-[11px] font-normal text-[#333] ml-2">{t.sub}</span>
             </button>
           ))}
         </div>
       </div>
 
-      {/* PLANOS — agrupados por velocidade, scroll horizontal */}
-      <section className="py-12 bg-[#0d0d0d]">
-        <div className="flex flex-col gap-12">
-          {SPEEDS.map(({ v }) => {
+      {/* PLANOS — mesmo layout da home */}
+      <section className="bg-[#1a1a1a] border-b border-[#333] py-16">
+        <div className="flex flex-col gap-10">
+          {SPEEDS.map(({ v, unit }) => {
             const grupo = filtered.filter(p => p.velocidade === v);
             if (!grupo.length) return null;
-            const unit = v === "1" ? "Giga" : "Mega";
             return (
               <div key={v}>
                 {/* Speed header */}
                 <div className="max-w-[1320px] mx-auto px-6 mb-4">
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-[56px] font-black leading-none text-[#F47B20]">{v}</span>
-                    <span className="text-2xl font-bold text-[#666]">{unit}</span>
-                    <span className="text-xs text-[#444] ml-2">{grupo.length} {grupo.length === 1 ? "plano" : "planos"}</span>
+                  <div className="flex items-baseline gap-2 pb-3 border-b border-[#333]">
+                    <span className="text-5xl font-black text-[#F47B20] leading-none">{v}</span>
+                    <span className="text-lg font-bold text-[#666]">{unit}</span>
                   </div>
                 </div>
 
-                {/* Horizontal scroll */}
-                <div style={{ overflowX: "auto", paddingBottom: 8 }}>
-                  <div style={{ display: "flex", gap: "20px", padding: "4px 24px", width: "fit-content", margin: "0 auto" }}>
-                    {grupo.map(p => (
-                      <div key={p.id} style={{ width: 300, flexShrink: 0 }}>
-                        <PlanCard plano={p} />
+                {/* Horizontal scroll row — idêntico à home */}
+                <div
+                  className="pb-2"
+                  style={{
+                    scrollbarWidth: "none" as const,
+                    WebkitOverflowScrolling: "touch" as const,
+                    overflowX: "auto",
+                    scrollSnapType: "x mandatory",
+                  }}
+                >
+                  <div className="flex gap-5 px-6 mx-auto" style={{ width: "fit-content" }}>
+                    {grupo.map(plano => (
+                      <div
+                        key={plano.id}
+                        className="flex-shrink-0 w-[300px]"
+                        style={{ scrollSnapAlign: "start" }}
+                      >
+                        <PlanCard
+                          plano={plano}
+                          variant={plano.featured ? "primary" : "outline"}
+                          showOptLabel={plano.chip ? `+ Chip ${plano.chip}` : plano.destaque}
+                        />
                       </div>
                     ))}
                   </div>
@@ -205,7 +135,7 @@ export default function PlanosPage() {
       </section>
 
       {/* SERVIÇOS ADICIONAIS */}
-      <section className="bg-[#111] border-y border-[#1e1e1e] py-14 px-6">
+      <section className="bg-[#111] border-b border-[#1e1e1e] py-14 px-6">
         <div className="max-w-[1320px] mx-auto">
           <div className="text-xs font-bold text-[#F47B20] uppercase tracking-widest mb-2">Serviços adicionais</div>
           <h2 className="text-2xl font-black tracking-tight mb-1">Adicione ao seu plano</h2>
@@ -220,17 +150,15 @@ export default function PlanosPage() {
               </div>
               <div className="font-black text-white text-lg mb-1">TV Nova Total</div>
               <div className="text-xs text-[#555] mb-4">118 canais · 51 canais de áudio · 3.000h de filmes</div>
-              <ul className="text-[11px] text-[#444] flex flex-col gap-1 mb-4 flex-1">
+              <ul className="text-[11px] text-[#666] flex flex-col gap-1 mb-4 flex-1">
                 <li>— Warner, TNT, Discovery, ESPN, CNN</li>
                 <li>— Cartoon Network, History, Sony Channel</li>
                 <li>— Stingray Music: 51 canais de áudio</li>
               </ul>
-              <div className="flex items-baseline gap-3 mb-1">
-                <div className="flex items-start gap-0.5">
-                  <span className="text-xs text-[#555] mt-1">R$</span>
-                  <span className="text-4xl font-black text-white leading-none">14</span>
-                  <span className="text-sm font-bold text-[#666] mt-1">,90/mês</span>
-                </div>
+              <div className="flex items-start gap-0.5 mb-4">
+                <span className="text-xs text-[#777] mt-1">R$</span>
+                <span className="text-4xl font-black text-white leading-none">14</span>
+                <span className="text-sm font-bold text-[#888] mt-1">,90/mês</span>
               </div>
               <Link href="/suporte#grade-canais" className="btn btn-outline btn-sm w-full justify-center mb-2">
                 Ver grade de canais
@@ -249,18 +177,16 @@ export default function PlanosPage() {
               </div>
               <div className="font-black text-white text-lg mb-1">e-Saude</div>
               <div className="text-xs text-[#555] mb-4">Telemedicina disponível 24h, 7 dias por semana</div>
-              <ul className="text-[11px] text-[#444] flex flex-col gap-1 mb-4 flex-1">
+              <ul className="text-[11px] text-[#666] flex flex-col gap-1 mb-4 flex-1">
                 <li>— Consulta médica online (clínico, pediatra, psicólogo)</li>
                 <li>— Atendimento 24h · sem fila · sem sair de casa</li>
                 <li>— Descontos em farmácias parceiras</li>
                 <li>— Válido para todos do mesmo endereço</li>
               </ul>
-              <div className="flex items-baseline gap-3 mb-1">
-                <div className="flex items-start gap-0.5">
-                  <span className="text-xs text-[#555] mt-1">R$</span>
-                  <span className="text-4xl font-black text-emerald-400 leading-none">14</span>
-                  <span className="text-sm font-bold text-emerald-700 mt-1">,90/mês</span>
-                </div>
+              <div className="flex items-start gap-0.5 mb-1">
+                <span className="text-xs text-[#777] mt-1">R$</span>
+                <span className="text-4xl font-black text-emerald-400 leading-none">14</span>
+                <span className="text-sm font-bold text-emerald-700 mt-1">,90/mês</span>
               </div>
               <div className="text-[11px] text-[#F47B20] font-bold mb-1">Assinante ClikLink: R$ 9,90/mês</div>
               <div className="text-[10px] text-emerald-700 mb-4">Incluso sem custo extra nos planos 300M, 600M e 1G</div>
@@ -278,17 +204,15 @@ export default function PlanosPage() {
               </div>
               <div className="font-black text-white text-lg mb-1">CallPet</div>
               <div className="text-xs text-[#555] mb-4">Cuidado veterinário online para o seu pet</div>
-              <ul className="text-[11px] text-[#444] flex flex-col gap-1 mb-4 flex-1">
+              <ul className="text-[11px] text-[#666] flex flex-col gap-1 mb-4 flex-1">
                 <li>— Consulta com veterinário online (sem sair de casa)</li>
                 <li>— Orientação sobre nutrição, vacinas e comportamento</li>
                 <li>— Válido para cães, gatos e outros animais</li>
               </ul>
-              <div className="flex items-baseline gap-3 mb-1">
-                <div className="flex items-start gap-0.5">
-                  <span className="text-xs text-[#555] mt-1">R$</span>
-                  <span className="text-4xl font-black text-[#F47B20] leading-none">14</span>
-                  <span className="text-sm font-bold text-[#F47B20]/50 mt-1">,90/mês</span>
-                </div>
+              <div className="flex items-start gap-0.5 mb-1">
+                <span className="text-xs text-[#777] mt-1">R$</span>
+                <span className="text-4xl font-black text-[#F47B20] leading-none">14</span>
+                <span className="text-sm font-bold text-[#F47B20]/50 mt-1">,90/mês</span>
               </div>
               <div className="text-[11px] text-[#F47B20] font-bold mb-1">Assinante ClikLink: R$ 9,90/mês</div>
               <div className="text-[10px] text-[#F47B20]/50 mb-4">Incluso sem custo extra nos planos 300M, 600M e 1G</div>
@@ -311,12 +235,12 @@ export default function PlanosPage() {
             <table className="w-full min-w-[780px] border-collapse text-sm">
               <thead>
                 <tr className="border-b border-[#1e1e1e]">
-                  <th className="text-left py-3 px-3 text-[#333] font-semibold w-20">Velocidade</th>
-                  <th className="text-left py-3 px-3 text-[#333] font-semibold">Descrição</th>
+                  <th className="text-left py-3 px-3 text-[#555] font-semibold w-20">Velocidade</th>
+                  <th className="text-left py-3 px-3 text-[#555] font-semibold">Descrição</th>
                   <th className="text-center py-3 px-3 text-purple-500 font-semibold">Chip</th>
                   <th className="text-center py-3 px-3 text-emerald-500 font-semibold">e-Saude</th>
                   <th className="text-center py-3 px-3 text-[#888] font-semibold">TV</th>
-                  <th className="text-right py-3 px-3 text-[#333] font-semibold">Preço/mês</th>
+                  <th className="text-right py-3 px-3 text-[#555] font-semibold">Preço/mês</th>
                   <th className="py-3 px-3 w-20" />
                 </tr>
               </thead>
@@ -344,17 +268,17 @@ export default function PlanosPage() {
                       <td className="text-center py-3 px-3">
                         {plano.chip
                           ? <span className="text-purple-400 font-bold text-xs bg-purple-400/10 px-2 py-0.5 rounded-full">{plano.chip}</span>
-                          : <span className="text-[#222]">—</span>}
+                          : <span className="text-[#333]">—</span>}
                       </td>
                       <td className="text-center py-3 px-3">
                         {plano.badges.includes("e-saude")
                           ? <span className="text-emerald-400 font-bold">✓</span>
-                          : <span className="text-[#222]">—</span>}
+                          : <span className="text-[#333]">—</span>}
                       </td>
                       <td className="text-center py-3 px-3">
                         {plano.badges.includes("tv")
                           ? <span className="text-[#888] font-bold">✓</span>
-                          : <span className="text-[#222]">—</span>}
+                          : <span className="text-[#333]">—</span>}
                       </td>
                       <td className="text-right py-3 px-3 font-black text-white whitespace-nowrap">
                         R$ {plano.preco.toFixed(2).replace(".", ",")}
