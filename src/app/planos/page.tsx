@@ -75,7 +75,7 @@ function PlanCard({ plano }: { plano: (typeof PLANOS)[0] }) {
         {/* Recursos */}
         <ul className="flex flex-col gap-1.5 mb-5 flex-1">
           {plano.recursos.map(r => (
-            <li key={r} className="flex items-start gap-2 text-[11px] text-[#888]">
+            <li key={r} className="flex items-start gap-2 text-[11px] text-[#aaa]">
               <Check size={11} className="text-[#F47B20] flex-shrink-0 mt-0.5" />
               {r}
             </li>
@@ -85,16 +85,15 @@ function PlanCard({ plano }: { plano: (typeof PLANOS)[0] }) {
         {/* Preço */}
         <div className="mb-4 pt-4 border-t border-[#222]">
           <div className="flex items-start gap-0.5">
-            <span className="text-xs font-bold text-[#555] mt-1.5">R$</span>
+            <span className="text-xs font-bold text-[#777] mt-1.5">R$</span>
             <span className="text-[40px] font-black leading-none text-white">
               {Math.floor(plano.preco)}
             </span>
             <div className="flex flex-col mt-1.5 ml-0.5">
-              <span className="text-sm font-bold text-[#666]">,{plano.preco.toFixed(2).split(".")[1]}</span>
-              <span className="text-[9px] text-[#333]">/mês</span>
+              <span className="text-sm font-bold text-[#888]">,{plano.preco.toFixed(2).split(".")[1]}</span>
+              <span className="text-[9px] text-[#666]">/mês</span>
             </div>
           </div>
-          <div className="text-[9px] text-[#333] mt-0.5">sem fidelidade · sem instalação</div>
         </div>
 
         <a
@@ -171,25 +170,33 @@ export default function PlanosPage() {
         </div>
       </div>
 
-      {/* PLANOS — agrupados por velocidade */}
+      {/* PLANOS — agrupados por velocidade, scroll horizontal */}
       <section className="py-12 bg-[#0d0d0d]">
-        <div className="max-w-[1320px] mx-auto px-6 flex flex-col gap-12">
-          {SPEEDS.map(({ v, label }) => {
+        <div className="flex flex-col gap-12">
+          {SPEEDS.map(({ v }) => {
             const grupo = filtered.filter(p => p.velocidade === v);
             if (!grupo.length) return null;
+            const unit = v === "1" ? "Giga" : "Mega";
             return (
               <div key={v}>
-                <div className="flex items-baseline gap-2 mb-5 pb-3 border-b border-[#1e1e1e]">
-                  <span className="text-4xl font-black text-[#F47B20] leading-none">{v}</span>
-                  <span className="text-base font-bold text-[#444]">{v === "1" ? "Giga" : "Mega"}</span>
-                  <span className="text-xs text-[#333] ml-2">{grupo.length} {grupo.length === 1 ? "plano" : "planos"}</span>
+                {/* Speed header */}
+                <div className="max-w-[1320px] mx-auto px-6 mb-4">
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-[56px] font-black leading-none text-[#F47B20]">{v}</span>
+                    <span className="text-2xl font-bold text-[#666]">{unit}</span>
+                    <span className="text-xs text-[#444] ml-2">{grupo.length} {grupo.length === 1 ? "plano" : "planos"}</span>
+                  </div>
                 </div>
-                <div className={`grid gap-4 ${
-                  grupo.length === 1 ? "max-w-xs" :
-                  grupo.length === 2 ? "grid-cols-1 sm:grid-cols-2 max-w-xl" :
-                  "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-                }`}>
-                  {grupo.map(p => <PlanCard key={p.id} plano={p} />)}
+
+                {/* Horizontal scroll */}
+                <div style={{ overflowX: "auto", paddingBottom: 8 }}>
+                  <div style={{ display: "flex", gap: "20px", padding: "4px 24px", width: "fit-content", margin: "0 auto" }}>
+                    {grupo.map(p => (
+                      <div key={p.id} style={{ width: 300, flexShrink: 0 }}>
+                        <PlanCard plano={p} />
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             );

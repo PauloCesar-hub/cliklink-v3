@@ -1,34 +1,110 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, CheckCircle, AlertCircle, Search } from "lucide-react";
+import { Check, CheckCircle, AlertCircle, Search, Building2, ChevronDown } from "lucide-react";
 import { Breadcrumb, PlanBadge } from "@/components/ui/index";
 import { getPlanoBySlug, formatPreco } from "@/lib/planos";
 import { assinaturaSchema, type AssinaturaSchema } from "@/lib/validations";
 import { formatCPF, formatPhone, formatCEP, fetchCEP, PHONE_HREF, PHONE, WHATSAPP_URL, PORTAL_URL } from "@/lib/utils";
+import { CONDOMINIOS } from "@/lib/condominios";
 import type { Plano, PlanoBadge } from "@/types";
 
 const STEPS = ["Seus dados", "Confirmação", "Instalação agendada"];
+
+// ── Condo picker ──────────────────────────────────────────────
+function CondoPicker({ onSelect }: { onSelect: (c: typeof CONDOMINIOS[0] | null) => void }) {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const [selected, setSelected] = useState<typeof CONDOMINIOS[0] | null>(null);
+  const ref = useRef<HTMLDivElement>(null);
+
+  const filtered = query.length >= 2
+    ? CONDOMINIOS.filter(c => c.nome.toLowerCase().includes(query.toLowerCase())).slice(0, 12)
+    : [];
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  function pick(c: typeof CONDOMINIOS[0]) {
+    setSelected(c);
+    setQuery(c.nome);
+    setOpen(false);
+    onSelect(c);
+  }
+
+  function clear() {
+    setSelected(null);
+    setQuery("");
+    onSelect(null);
+  }
+
+  return (
+    <div ref={ref} className="relative">
+      <div className="relative">
+        <Building2 size={15} className="absolute left-3 top-3.5 text-[#555]" />
+        <input
+          type="text"
+          value={query}
+          onChange={e => { setQuery(e.target.value); setOpen(true); if (selected) { setSelected(null); onSelect(null); } }}
+          onFocus={() => setOpen(true)}
+          placeholder="Busque pelo nome do condomínio..."
+          className="form-input pl-9 pr-9"
+        />
+        {selected
+          ? <button type="button" onClick={clear} className="absolute right-3 top-3 text-[#555] hover:text-white text-lg leading-none">×</button>
+          : <ChevronDown size={15} className="absolute right-3 top-3.5 text-[#555] pointer-events-none" />
+        }
+      </div>
+
+      {open && filtered.length > 0 && (
+        <div className="absolute z-50 top-full mt-1 left-0 right-0 bg-[#1a1a1a] border border-[#333] rounded-xl overflow-hidden shadow-xl max-h-64 overflow-y-auto">
+          {filtered.map(c => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => pick(c)}
+              className="w-full text-left px-4 py-3 hover:bg-[#252525] transition-colors border-b border-[#222] last:border-0"
+            >
+              <div className="text-sm font-semibold text-white">{c.nome}</div>
+              <div className="text-xs text-[#555] mt-0.5">{c.endereco} · {c.bairro}</div>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {selected && (
+        <div className="mt-2 bg-[rgba(244,123,32,0.06)] border border-[rgba(244,123,32,0.2)] rounded-xl px-4 py-3 flex items-center gap-2">
+          <Check size={14} className="text-[#F47B20] flex-shrink-0" />
+          <div>
+            <div className="text-sm font-bold text-white">{selected.nome}</div>
+            <div className="text-xs text-[#888]">{selected.endereco} · CEP {selected.cep}</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function AssinarPage() {
   const params = useParams();
   const slug = typeof params?.slug === "string" ? params.slug : "";
   const plano = getPlanoBySlug(slug);
 
-  const [step, setStep] = useState(0); // 0=form, 1=success
+  const [step, setStep] = useState(0);
   const [cepLoading, setCepLoading] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "loading" | "error">("idle");
 
   const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { errors },
+    register, handleSubmit, setValue, watch, formState: { errors },
   } = useForm<AssinaturaSchema>({
     resolver: zodResolver(assinaturaSchema),
     defaultValues: {
@@ -40,7 +116,6 @@ export default function AssinarPage() {
     },
   });
 
-  // Sync plan values if plano loads
   useEffect(() => {
     if (plano) {
       setValue("planoId", plano.id);
@@ -53,7 +128,6 @@ export default function AssinarPage() {
     return (
       <div className="min-h-screen flex items-center justify-center text-center p-6">
         <div>
-          <div className="text-5xl mb-4">😕</div>
           <h1 className="text-2xl font-bold mb-2">Plano não encontrado</h1>
           <p className="text-[#888] mb-6">O plano que você buscou não existe.</p>
           <Link href="/planos" className="btn btn-primary">Ver todos os planos</Link>
@@ -62,7 +136,21 @@ export default function AssinarPage() {
     );
   }
 
-  // CEP auto-fill
+  function handleCondoSelect(c: typeof CONDOMINIOS[0] | null) {
+    if (!c) return;
+    // Parse endereco: "Rua X, 123" → rua + numero
+    const parts = c.endereco.split(",");
+    const rua = parts[0]?.trim() ?? c.endereco;
+    const numero = parts[1]?.trim() ?? "";
+    setValue("nomeCondominio", c.nome);
+    setValue("rua", rua);
+    setValue("numero", numero);
+    setValue("bairro", c.bairro);
+    setValue("cep", c.cep);
+    setValue("cidade", "Araraquara");
+    setValue("uf", "SP");
+  }
+
   async function handleCepBlur() {
     const cep = watch("cep")?.replace(/\D/g, "");
     if (cep?.length !== 8) return;
@@ -73,11 +161,7 @@ export default function AssinarPage() {
       setValue("bairro", data.bairro || "");
       setValue("cidade", data.localidade || "Araraquara");
       setValue("uf", data.uf || "SP");
-    } catch {
-      // silent fail — user fills manually
-    } finally {
-      setCepLoading(false);
-    }
+    } catch { /* silent */ } finally { setCepLoading(false); }
   }
 
   async function onSubmit(data: AssinaturaSchema) {
@@ -99,43 +183,31 @@ export default function AssinarPage() {
 
   return (
     <>
-      <Breadcrumb
-        items={[
-          { label: "Início", href: "/" },
-          { label: "Planos", href: "/planos" },
-          { label: `Assinar: ${plano.nome}` },
-        ]}
-      />
+      <Breadcrumb items={[{ label: "Início", href: "/" }, { label: "Planos", href: "/planos" }, { label: `Assinar: ${plano.nome}` }]} />
 
-      {/* Page hero */}
-      <div className="bg-[#0d0d0d] border-b border-[#333] py-10 px-6 relative overflow-hidden">
-        <div className="absolute w-[300px] h-[300px] rounded-full bg-[rgba(244,123,32,0.05)] -top-20 -right-10 pointer-events-none" />
-        <div className="max-w-[1320px] mx-auto relative z-10">
-          <div className="section-tag mb-3">📋 Contratação</div>
+      {/* Header */}
+      <div className="bg-[#0d0d0d] border-b border-[#333] py-10 px-6">
+        <div className="max-w-[1320px] mx-auto">
+          <div className="text-xs font-bold text-[#F47B20] uppercase tracking-widest mb-3">Contratação</div>
           <h1 className="text-3xl md:text-4xl font-black tracking-tight">
-            Assinar:{" "}
-            <span className="text-[#F47B20]">{plano.nome}</span>
+            Assinar: <span className="text-[#F47B20]">{plano.nome}</span>
           </h1>
-          <p className="text-[#888] mt-2">
-            Preencha seus dados e nossa equipe entrará em contato para finalizar a instalação.
-          </p>
+          <p className="text-[#888] mt-2">Preencha seus dados e nossa equipe entra em contato para finalizar a instalação.</p>
         </div>
       </div>
 
       {/* Steps */}
-      <div className="bg-[#1a1a1a] border-b border-[#333] px-6 py-4">
+      <div className="bg-[#0d0d0d] border-b border-[#222] px-6 py-4">
         <div className="max-w-[1320px] mx-auto flex items-center gap-2">
           {STEPS.map((s, i) => (
             <div key={s} className="flex items-center gap-2 flex-1">
-              <div className={`step-num ${i < step ? "done" : i === step ? "active" : ""}`}>
-                {i < step ? <Check size={14} /> : i + 1}
+              <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                i < step ? "bg-[#F47B20] text-black" : i === step ? "bg-[#F47B20] text-black" : "bg-[#222] text-[#555]"
+              }`}>
+                {i < step ? <Check size={13} /> : i + 1}
               </div>
-              <span className={`text-xs font-semibold hidden sm:block ${i === step ? "text-[#F47B20]" : i < step ? "text-white" : "text-[#555]"}`}>
-                {s}
-              </span>
-              {i < STEPS.length - 1 && (
-                <div className={`flex-1 h-px mx-2 ${i < step ? "bg-[#F47B20]" : "bg-[#333]"}`} />
-              )}
+              <span className={`text-xs font-semibold hidden sm:block ${i === step ? "text-[#F47B20]" : i < step ? "text-white" : "text-[#444]"}`}>{s}</span>
+              {i < STEPS.length - 1 && <div className={`flex-1 h-px mx-2 ${i < step ? "bg-[#F47B20]" : "bg-[#222]"}`} />}
             </div>
           ))}
         </div>
@@ -144,26 +216,15 @@ export default function AssinarPage() {
       <div className="max-w-[1320px] mx-auto px-6 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
 
-          {/* ── FORM ── */}
+          {/* FORM */}
           <div>
             {step === 0 ? (
-              <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-8">
-
-                {/* Condomínio notice */}
-                {isCondominio && (
-                  <div className="bg-[rgba(244,123,32,0.06)] border border-[rgba(244,123,32,0.25)] rounded-2xl p-6 text-center">
-                    <div className="text-4xl mb-3">🏢</div>
-                    <h3 className="font-bold text-white mb-1">Plano para condomínios</h3>
-                    <p className="text-sm text-[#888]">
-                      Os planos para condomínios são personalizados. Preencha seus dados e um consultor entrará em contato.
-                    </p>
-                  </div>
-                )}
+              <form onSubmit={handleSubmit(onSubmit)} noValidate className="flex flex-col gap-6">
 
                 {/* Dados pessoais */}
-                <div className="card p-7">
-                  <div className="text-xs font-bold text-[#F47B20] uppercase tracking-wider mb-5 pb-3 border-b border-[#333]">
-                    👤 Dados pessoais
+                <div className="bg-[#111] border border-[#222] rounded-2xl p-7">
+                  <div className="text-xs font-bold text-[#F47B20] uppercase tracking-widest mb-5 pb-3 border-b border-[#222]">
+                    Dados pessoais
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="sm:col-span-2">
@@ -173,13 +234,8 @@ export default function AssinarPage() {
                     </div>
                     <div>
                       <label className="form-label" htmlFor="f-cpf">CPF <span>*</span></label>
-                      <input
-                        id="f-cpf"
-                        {...register("cpf")}
-                        className={`form-input ${errors.cpf ? "error" : ""}`}
-                        placeholder="000.000.000-00"
-                        onChange={(e) => setValue("cpf", formatCPF(e.target.value))}
-                      />
+                      <input id="f-cpf" {...register("cpf")} className={`form-input ${errors.cpf ? "error" : ""}`} placeholder="000.000.000-00"
+                        onChange={e => setValue("cpf", formatCPF(e.target.value))} />
                       {errors.cpf && <p className="form-error">{errors.cpf.message}</p>}
                     </div>
                     <div>
@@ -192,44 +248,32 @@ export default function AssinarPage() {
                       {errors.email && <p className="form-error">{errors.email.message}</p>}
                     </div>
                     <div>
-                      <label className="form-label" htmlFor="f-tel">Telefone / WhatsApp <span>*</span></label>
-                      <input
-                        id="f-tel"
-                        {...register("telefone")}
-                        className={`form-input ${errors.telefone ? "error" : ""}`}
-                        placeholder="(16) 99999-0000"
-                        autoComplete="tel"
-                        onChange={(e) => setValue("telefone", formatPhone(e.target.value))}
-                      />
+                      <label className="form-label" htmlFor="f-tel">WhatsApp / Telefone <span>*</span></label>
+                      <input id="f-tel" {...register("telefone")} className={`form-input ${errors.telefone ? "error" : ""}`} placeholder="(16) 99999-0000" autoComplete="tel"
+                        onChange={e => setValue("telefone", formatPhone(e.target.value))} />
                       {errors.telefone && <p className="form-error">{errors.telefone.message}</p>}
                     </div>
-                    {isCondominio && (
-                      <div className="sm:col-span-2">
-                        <label className="form-label" htmlFor="f-condo">Nome do condomínio <span>*</span></label>
-                        <input id="f-condo" {...register("nomeCondominio")} className="form-input" placeholder="Ex: Residencial Parque do Sol" />
-                      </div>
-                    )}
                   </div>
                 </div>
 
                 {/* Endereço */}
-                <div className="card p-7">
-                  <div className="text-xs font-bold text-[#F47B20] uppercase tracking-wider mb-5 pb-3 border-b border-[#333]">
-                    📍 Endereço de instalação
+                <div className="bg-[#111] border border-[#222] rounded-2xl p-7">
+                  <div className="text-xs font-bold text-[#F47B20] uppercase tracking-widest mb-5 pb-3 border-b border-[#222]">
+                    Endereço de instalação
                   </div>
+
+                  {/* Condo selector */}
+                  <div className="mb-5">
+                    <label className="form-label">Selecione seu condomínio <span className="text-[#555] font-normal normal-case">(opcional — preenche o endereço automaticamente)</span></label>
+                    <CondoPicker onSelect={handleCondoSelect} />
+                  </div>
+
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
                       <label className="form-label" htmlFor="f-cep">CEP <span>*</span></label>
                       <div className="relative">
-                        <input
-                          id="f-cep"
-                          {...register("cep")}
-                          className={`form-input pr-10 ${errors.cep ? "error" : ""}`}
-                          placeholder="00000-000"
-                          maxLength={9}
-                          onChange={(e) => setValue("cep", formatCEP(e.target.value))}
-                          onBlur={handleCepBlur}
-                        />
+                        <input id="f-cep" {...register("cep")} className={`form-input pr-10 ${errors.cep ? "error" : ""}`} placeholder="00000-000" maxLength={9}
+                          onChange={e => setValue("cep", formatCEP(e.target.value))} onBlur={handleCepBlur} />
                         <Search size={15} className={`absolute right-3 top-3.5 ${cepLoading ? "text-[#F47B20] animate-spin-slow" : "text-[#555]"}`} />
                       </div>
                       {errors.cep && <p className="form-error">{errors.cep.message}</p>}
@@ -254,41 +298,30 @@ export default function AssinarPage() {
                       {errors.bairro && <p className="form-error">{errors.bairro.message}</p>}
                     </div>
                     <div className="sm:col-span-2">
+                      <label className="form-label" htmlFor="f-condo">Nome do condomínio</label>
+                      <input id="f-condo" {...register("nomeCondominio")} className="form-input" placeholder="Ex: Residencial Parque do Sol" />
+                    </div>
+                    <div>
                       <label className="form-label" htmlFor="f-cidade">Cidade <span>*</span></label>
                       <input id="f-cidade" {...register("cidade")} className={`form-input ${errors.cidade ? "error" : ""}`} />
                       {errors.cidade && <p className="form-error">{errors.cidade.message}</p>}
-                    </div>
-                    <div>
-                      <label className="form-label" htmlFor="f-uf">UF</label>
-                      <select id="f-uf" {...register("uf")} className="form-input">
-                        {["SP","MG","RJ","RS","PR","SC","BA","GO","PE","CE"].map(uf => <option key={uf} value={uf}>{uf}</option>)}
-                      </select>
                     </div>
                   </div>
                 </div>
 
                 {/* Obs + LGPD */}
-                <div className="card p-7">
-                  <div className="text-xs font-bold text-[#F47B20] uppercase tracking-wider mb-5 pb-3 border-b border-[#333]">
-                    💬 Observações
+                <div className="bg-[#111] border border-[#222] rounded-2xl p-7">
+                  <div className="text-xs font-bold text-[#F47B20] uppercase tracking-widest mb-5 pb-3 border-b border-[#222]">
+                    Observações
                   </div>
                   <div>
                     <label className="form-label" htmlFor="f-obs">Informações adicionais</label>
-                    <textarea
-                      id="f-obs"
-                      {...register("observacoes")}
-                      rows={3}
-                      className="form-input resize-none"
-                      placeholder="Ex: Melhor horário para contato, andar do apartamento, porteiro..."
-                    />
+                    <textarea id="f-obs" {...register("observacoes")} rows={3} className="form-input resize-none"
+                      placeholder="Melhor horário para contato, andar do apartamento, porteiro..." />
                   </div>
-                  <div className="mt-4 p-4 bg-[#2a2a2a] rounded-xl border border-[#333]">
+                  <div className="mt-4 p-4 bg-[#1a1a1a] rounded-xl border border-[#222]">
                     <label className="flex items-start gap-3 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        {...register("aceiteLgpd")}
-                        className="mt-0.5 accent-[#F47B20] w-4 h-4 flex-shrink-0"
-                      />
+                      <input type="checkbox" {...register("aceiteLgpd")} className="mt-0.5 accent-[#F47B20] w-4 h-4 flex-shrink-0" />
                       <span className="text-xs text-[#aaa] leading-relaxed">
                         Concordo com o tratamento dos meus dados pessoais pela ClikLink Internet para fins de contato e contratação de serviços.{" "}
                         <Link href="#" className="text-[#F47B20]">Política de privacidade</Link>. <span className="text-[#F47B20]">*</span>
@@ -301,101 +334,66 @@ export default function AssinarPage() {
                 {submitStatus === "error" && (
                   <div className="flex items-center gap-3 text-red-400 text-sm bg-red-400/10 border border-red-400/25 rounded-xl p-4">
                     <AlertCircle size={18} />
-                    Erro ao enviar. Tente novamente ou entre em contato pelo{" "}
+                    Erro ao enviar. Tente pelo{" "}
                     <a href={WHATSAPP_URL} className="underline font-bold" target="_blank" rel="noopener">WhatsApp</a>.
                   </div>
                 )}
 
-                <button
-                  type="submit"
-                  disabled={submitStatus === "loading"}
-                  className="btn btn-primary btn-lg w-full justify-center"
-                >
-                  {submitStatus === "loading" ? "Enviando solicitação..." : "Enviar solicitação de assinatura →"}
+                <button type="submit" disabled={submitStatus === "loading"} className="btn btn-primary btn-lg w-full justify-center">
+                  {submitStatus === "loading" ? "Enviando..." : "Enviar solicitação →"}
                 </button>
                 <p className="text-xs text-[#555] text-center">
-                  Após o envio, nossa equipe entrará em contato em até 1 dia útil para confirmar e agendar a instalação.
+                  Nossa equipe entra em contato em até 1 dia útil para confirmar e agendar a instalação.
                 </p>
               </form>
             ) : (
-              /* SUCCESS */
-              <div className="card p-10 text-center animate-fadeInUp">
+              <div className="bg-[#111] border border-[#222] rounded-2xl p-10 text-center">
                 <CheckCircle size={56} className="text-green-400 mx-auto mb-4" />
                 <h2 className="text-2xl font-black mb-2">Solicitação enviada!</h2>
-                <p className="text-[#888] mb-6">
-                  Nossa equipe entrará em contato em até <strong className="text-white">1 dia útil</strong> pelo número informado para confirmar os dados e agendar a instalação.
+                <p className="text-[#aaa] mb-6">
+                  Nossa equipe entra em contato em até <strong className="text-white">1 dia útil</strong> para confirmar os dados e agendar a instalação.
                 </p>
                 <div className="flex gap-3 justify-center flex-wrap mb-6">
-                  <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
-                    💬 Falar no WhatsApp
-                  </a>
+                  <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="btn btn-primary">Falar no WhatsApp</a>
                   <Link href="/" className="btn btn-outline">Voltar ao início</Link>
-                </div>
-                <div className="bg-[#2a2a2a] border border-[#333] rounded-xl p-5">
-                  <p className="text-sm text-[#888] mb-3">Já é cliente? Acesse sua conta:</p>
-                  <a href={PORTAL_URL} target="_blank" rel="noopener noreferrer" className="btn btn-outline btn-sm">
-                    👤 Central do Assinante
-                  </a>
                 </div>
               </div>
             )}
           </div>
 
-          {/* ── PLAN SUMMARY SIDEBAR ── */}
-          <div className="bg-[#2a2a2a] border border-[#333] rounded-2xl p-6 sticky top-20">
-            <div className="text-xs font-bold text-[#F47B20] uppercase tracking-wider mb-3">
-              Plano selecionado
-            </div>
-
-            {/* Speed */}
+          {/* PLAN SIDEBAR */}
+          <div className="bg-[#111] border border-[#222] rounded-2xl p-6 sticky top-20">
+            <div className="text-xs font-bold text-[#F47B20] uppercase tracking-widest mb-3">Plano selecionado</div>
             <div className="flex items-baseline gap-1 mb-1">
-              <span className="text-[42px] font-black text-[#F47B20] leading-none tracking-tighter">
-                {plano.velocidade}
-              </span>
-              <span className="text-lg font-bold text-[#aaa]">{plano.unidade}</span>
+              <span className="text-[42px] font-black text-[#F47B20] leading-none tracking-tighter">{plano.velocidade}</span>
+              <span className="text-lg font-bold text-[#777]">{plano.unidade}</span>
             </div>
-            <div className="text-sm font-semibold text-[#888] mb-4">{plano.nome}</div>
-
-            {/* Price */}
+            <div className="text-sm font-semibold text-[#777] mb-4">{plano.nome}</div>
             {isCondominio ? (
               <div className="text-xl font-bold text-white mb-4">Sob consulta</div>
             ) : (
               <div className="mb-4">
-                <div className="text-xs text-[#888] mb-0.5">Por</div>
+                <div className="text-xs text-[#555] mb-0.5">Por</div>
                 <div className="text-3xl font-black text-white tracking-tight">
-                  {formatPreco(plano.preco)}
-                  <span className="text-sm font-normal text-[#888]">/mês</span>
+                  {formatPreco(plano.preco)}<span className="text-sm font-normal text-[#777]">/mês</span>
                 </div>
               </div>
             )}
-
-            <hr className="border-[#333] mb-4" />
-
-            {/* Features */}
+            <hr className="border-[#222] mb-4" />
             <ul className="flex flex-col gap-2 mb-4">
-              {plano.recursos.map((r) => (
-                <li key={r} className="flex items-start gap-2 text-xs text-[#999]">
-                  <Check size={13} className="text-[#F47B20] flex-shrink-0 mt-0.5" />
-                  {r}
+              {plano.recursos.map(r => (
+                <li key={r} className="flex items-start gap-2 text-xs text-[#aaa]">
+                  <Check size={13} className="text-[#F47B20] flex-shrink-0 mt-0.5" />{r}
                 </li>
               ))}
             </ul>
-
-            {/* Badges */}
             {plano.badges.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mb-4">
-                {plano.badges.map((b) => <PlanBadge key={b} badge={b as PlanoBadge} />)}
+                {plano.badges.map(b => <PlanBadge key={b} badge={b as PlanoBadge} />)}
               </div>
             )}
-
-            <hr className="border-[#333] mb-4" />
-            <div className="flex items-center gap-2 text-green-400 font-bold text-sm mb-4">
-              <CheckCircle size={15} /> Plano ativo após confirmação
-            </div>
-
-            <Link href="/planos" className="btn btn-outline btn-sm w-full justify-center">
-              ← Mudar de plano
-            </Link>
+            <hr className="border-[#222] mb-4" />
+            <Link href="/planos" className="btn btn-outline btn-sm w-full justify-center">← Mudar de plano</Link>
           </div>
         </div>
       </div>
