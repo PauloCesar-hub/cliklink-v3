@@ -82,7 +82,7 @@ export default function HomePage() {
                   scrollSnapType: "x mandatory",
                 }}
               >
-                <div className="flex gap-4 md:gap-5 px-4 md:px-6" style={{ width: "fit-content" }}>
+                <div className="flex gap-4 md:gap-5 px-4 md:px-6 mx-auto" style={{ width: "fit-content" }}>
                 {group.planos.map((plano) => (
                   <div
                     key={plano.id}

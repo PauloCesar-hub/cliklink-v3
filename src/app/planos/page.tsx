@@ -31,7 +31,7 @@ export default function PlanosPage() {
           <p className="text-[#666] text-sm md:text-base max-w-lg">
             Fibra óptica 100%, e-Saude incluso e suporte humano local em Araraquara.
           </p>
-          <div className="hidden md:flex items-center gap-6 mt-5">
+          <div className="flex flex-wrap items-center gap-6 mt-5">
             <div className="flex items-center gap-2.5">
               <div className="relative w-10 h-10">
                 <Image src="/logos/logo-telemedicina.png" alt="e-Saude" fill className="object-contain" />
@@ -78,7 +78,7 @@ export default function PlanosPage() {
                     scrollSnapType: "x mandatory",
                   }}
                 >
-                  <div className="flex gap-4 md:gap-5 px-4 md:px-6" style={{ width: "fit-content" }}>
+                  <div className="flex gap-4 md:gap-5 px-4 md:px-6 mx-auto" style={{ width: "fit-content" }}>
                     {grupo.map(plano => (
                       <div
                         key={plano.id}
@@ -192,22 +192,26 @@ export default function PlanosPage() {
         </div>
       </section>
 
-      {/* TABELA — só desktop */}
-      <section className="hidden md:block bg-[#0d0d0d] border-b border-[#1e1e1e] py-14 px-6">
+      {/* TABELA */}
+      <section className="bg-[#0d0d0d] border-b border-[#1e1e1e] py-14 px-6">
         <div className="max-w-[1320px] mx-auto">
           <div className="text-xs font-bold text-[#F47B20] uppercase tracking-widest mb-2">Tabela completa</div>
-          <h2 className="text-2xl font-black tracking-tight mb-6">Todos os {internet.length} planos disponíveis</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full min-w-[780px] border-collapse text-sm">
+          <h2 className="text-2xl font-black tracking-tight mb-1">Todos os {internet.length} planos disponíveis</h2>
+          <p className="text-xs text-[#444] mb-4 md:hidden">← Deslize para ver todos os dados</p>
+          <div
+            className="overflow-x-auto rounded-xl border border-[#1e1e1e]"
+            style={{ WebkitOverflowScrolling: "touch" }}
+          >
+            <table className="w-full min-w-[640px] border-collapse text-xs md:text-sm">
               <thead>
                 <tr className="border-b border-[#1e1e1e]">
-                  <th className="text-left py-3 px-3 text-[#555] font-semibold w-20">Velocidade</th>
-                  <th className="text-left py-3 px-3 text-[#555] font-semibold">Descrição</th>
-                  <th className="text-center py-3 px-3 text-purple-500 font-semibold">Chip</th>
-                  <th className="text-center py-3 px-3 text-emerald-500 font-semibold">e-Saude</th>
-                  <th className="text-center py-3 px-3 text-[#888] font-semibold">TV</th>
-                  <th className="text-right py-3 px-3 text-[#555] font-semibold">Preço/mês</th>
-                  <th className="py-3 px-3 w-20" />
+                  <th className="text-left py-2 px-2 md:py-3 md:px-3 text-[#555] font-semibold w-12 md:w-20">Vel.</th>
+                  <th className="text-left py-2 px-2 md:py-3 md:px-3 text-[#555] font-semibold">Descrição</th>
+                  <th className="text-center py-2 px-2 md:py-3 md:px-3 text-purple-500 font-semibold">Chip</th>
+                  <th className="text-center py-2 px-2 md:py-3 md:px-3 text-emerald-500 font-semibold">e-Saude</th>
+                  <th className="text-center py-2 px-2 md:py-3 md:px-3 text-[#888] font-semibold">TV</th>
+                  <th className="text-right py-2 px-2 md:py-3 md:px-3 text-[#555] font-semibold whitespace-nowrap">Preço</th>
+                  <th className="py-2 px-2 md:py-3 md:px-3 w-16 md:w-20" />
                 </tr>
               </thead>
               <tbody>
@@ -219,11 +223,11 @@ export default function PlanosPage() {
                         plano.featured ? "bg-[rgba(244,123,32,0.03)]" : ""
                       }`}>
                       {i === 0 && (
-                        <td className="py-3 px-3 font-black text-[#F47B20] align-top pt-4" rowSpan={grupo.length}>
+                        <td className="py-2 px-2 md:py-3 md:px-3 font-black text-[#F47B20] align-top pt-3 md:pt-4" rowSpan={grupo.length}>
                           {v}{v === "1" ? "G" : "M"}
                         </td>
                       )}
-                      <td className="py-3 px-3 text-[#999]">
+                      <td className="py-2 px-2 md:py-3 md:px-3 text-[#999]">
                         <div className="flex items-center gap-2 flex-wrap">
                           <span>{plano.descricao}</span>
                           {plano.destaque && (
@@ -231,27 +235,27 @@ export default function PlanosPage() {
                           )}
                         </div>
                       </td>
-                      <td className="text-center py-3 px-3">
+                      <td className="text-center py-2 px-2 md:py-3 md:px-3">
                         {plano.chip
-                          ? <span className="text-purple-400 font-bold text-xs bg-purple-400/10 px-2 py-0.5 rounded-full">{plano.chip}</span>
+                          ? <span className="text-purple-400 font-bold text-[10px] md:text-xs bg-purple-400/10 px-1.5 py-0.5 rounded-full whitespace-nowrap">{plano.chip}</span>
                           : <span className="text-[#333]">—</span>}
                       </td>
-                      <td className="text-center py-3 px-3">
+                      <td className="text-center py-2 px-2 md:py-3 md:px-3">
                         {plano.badges.includes("e-saude")
                           ? <span className="text-emerald-400 font-bold">✓</span>
                           : <span className="text-[#333]">—</span>}
                       </td>
-                      <td className="text-center py-3 px-3">
+                      <td className="text-center py-2 px-2 md:py-3 md:px-3">
                         {plano.badges.includes("tv")
                           ? <span className="text-[#888] font-bold">✓</span>
                           : <span className="text-[#333]">—</span>}
                       </td>
-                      <td className="text-right py-3 px-3 font-black text-white whitespace-nowrap">
+                      <td className="text-right py-2 px-2 md:py-3 md:px-3 font-black text-white whitespace-nowrap">
                         R$ {plano.preco.toFixed(2).replace(".", ",")}
                       </td>
-                      <td className="text-center py-3 px-3">
+                      <td className="text-center py-2 px-2 md:py-3 md:px-3">
                         <Link href={`/assinar/${plano.slug}`}
-                          className={`btn btn-sm ${plano.featured ? "btn-primary" : "btn-outline"}`}>
+                          className={`btn btn-sm text-[10px] md:text-xs px-2 md:px-3 ${plano.featured ? "btn-primary" : "btn-outline"}`}>
                           Assinar
                         </Link>
                       </td>
