@@ -5,15 +5,17 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Check, CheckCircle, AlertCircle, Search, Building2, ChevronDown } from "lucide-react";
+import { Check, CheckCircle, Search, Building2, ChevronDown } from "lucide-react";
 import { Breadcrumb, PlanBadge } from "@/components/ui/index";
 import { getPlanoBySlug, formatPreco } from "@/lib/planos";
 import { assinaturaSchema, type AssinaturaSchema } from "@/lib/validations";
-import { formatCPF, formatPhone, formatCEP, fetchCEP, PHONE_HREF, PHONE, WHATSAPP_URL, PORTAL_URL } from "@/lib/utils";
+import { formatCPF, formatPhone, formatCEP, fetchCEP, WHATSAPP_URL, PORTAL_URL } from "@/lib/utils";
 import { CONDOMINIOS } from "@/lib/condominios";
 import type { Plano, PlanoBadge } from "@/types";
 
-const STEPS = ["Seus dados", "Confirmação", "Instalação agendada"];
+const WA_NUMBER = "551630148884";
+
+const STEPS = ["Seus dados", "WhatsApp"];
 
 // ── Condo picker ──────────────────────────────────────────────
 function CondoPicker({ onSelect }: { onSelect: (c: typeof CONDOMINIOS[0] | null) => void }) {
@@ -104,7 +106,6 @@ export default function AssinarPage() {
 
   const [step, setStep] = useState(0);
   const [cepLoading, setCepLoading] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<"idle" | "loading" | "error">("idle");
 
   const {
     register, handleSubmit, setValue, watch, formState: { errors },
@@ -167,19 +168,35 @@ export default function AssinarPage() {
     } catch { /* silent */ } finally { setCepLoading(false); }
   }
 
-  async function onSubmit(data: AssinaturaSchema) {
-    setSubmitStatus("loading");
-    try {
-      const res = await fetch("/api/assinatura", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error("server error");
-      setStep(1);
-    } catch {
-      setSubmitStatus("error");
-    }
+  function onSubmit(data: AssinaturaSchema) {
+    const lines = [
+      `🌐 *Nova Solicitação de Plano — ClikLink*`,
+      ``,
+      `📦 *PLANO SOLICITADO*`,
+      `Plano: ${data.planoNome}`,
+      `Valor: R$ ${data.planoPreco.toFixed(2).replace(".", ",")} /mês`,
+      ``,
+      `👤 *DADOS PESSOAIS*`,
+      `Nome: ${data.nome}`,
+      `CPF: ${data.cpf}`,
+      data.dataNascimento ? `Nascimento: ${data.dataNascimento}` : null,
+      `E-mail: ${data.email}`,
+      `WhatsApp: ${data.telefone}`,
+      ``,
+      `🏠 *ENDEREÇO DE INSTALAÇÃO*`,
+      data.nomeCondominio ? `Condomínio: ${data.nomeCondominio}` : null,
+      `CEP: ${data.cep}`,
+      `Endereço: ${data.rua}, ${data.numero}${data.complemento ? ` — ${data.complemento}` : ""}`,
+      `Bairro: ${data.bairro}`,
+      `Cidade: ${data.cidade}/${data.uf}`,
+      data.observacoes ? `\n💬 *OBSERVAÇÕES*\n${data.observacoes}` : null,
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+    const url = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(lines)}`;
+    window.open(url, "_blank");
+    setStep(1);
   }
 
   const isCondominio = plano.categoria === "condominio";
@@ -334,30 +351,24 @@ export default function AssinarPage() {
                   </div>
                 </div>
 
-                {submitStatus === "error" && (
-                  <div className="flex items-center gap-3 text-red-400 text-sm bg-red-400/10 border border-red-400/25 rounded-xl p-4">
-                    <AlertCircle size={18} />
-                    Erro ao enviar. Tente pelo{" "}
-                    <a href={WHATSAPP_URL} className="underline font-bold" target="_blank" rel="noopener">WhatsApp</a>.
-                  </div>
-                )}
-
-                <button type="submit" disabled={submitStatus === "loading"} className="btn btn-primary btn-lg w-full justify-center">
-                  {submitStatus === "loading" ? "Enviando..." : "Enviar solicitação →"}
+                <button type="submit" className="btn btn-primary btn-lg w-full justify-center gap-2 text-base">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.123.555 4.112 1.529 5.835L.057 23.522a.5.5 0 0 0 .614.634l5.857-1.535A11.945 11.945 0 0 0 12 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.818a9.818 9.818 0 0 1-5.01-1.373l-.36-.213-3.477.911.927-3.38-.234-.373A9.818 9.818 0 0 1 2.182 12C2.182 6.58 6.58 2.182 12 2.182S21.818 6.58 21.818 12 17.42 21.818 12 21.818z"/></svg>
+                  Enviar pelo WhatsApp
                 </button>
                 <p className="text-xs text-[#555] text-center">
-                  Nossa equipe entra em contato em até 1 dia útil para confirmar e agendar a instalação.
+                  Seus dados serão enviados direto para o WhatsApp da ClikLink. Nossa equipe responde em minutos.
                 </p>
               </form>
             ) : (
               <div className="bg-[#111] border border-[#222] rounded-2xl p-10 text-center">
                 <CheckCircle size={56} className="text-green-400 mx-auto mb-4" />
-                <h2 className="text-2xl font-black mb-2">Solicitação enviada!</h2>
-                <p className="text-[#aaa] mb-6">
-                  Nossa equipe entra em contato em até <strong className="text-white">1 dia útil</strong> para confirmar os dados e agendar a instalação.
+                <h2 className="text-2xl font-black mb-2">WhatsApp aberto!</h2>
+                <p className="text-[#aaa] mb-2">
+                  Seus dados foram enviados para o WhatsApp da ClikLink. <strong className="text-white">Clique em Enviar</strong> na conversa para concluir.
                 </p>
-                <div className="flex gap-3 justify-center flex-wrap mb-6">
-                  <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="btn btn-primary">Falar no WhatsApp</a>
+                <p className="text-sm text-[#555] mb-6">Nossa equipe responde em minutos e agenda a instalação.</p>
+                <div className="flex gap-3 justify-center flex-wrap">
+                  <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="btn btn-primary">Abrir WhatsApp novamente</a>
                   <Link href="/" className="btn btn-outline">Voltar ao início</Link>
                 </div>
               </div>
