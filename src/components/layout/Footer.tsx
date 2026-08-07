@@ -34,10 +34,10 @@ export function Footer() {
           <div>
             <div className="mb-4">
               <Image
-                src="/logo-cliklink.png"
+                src="/logo-cliklinkSF.png"
                 alt="ClikLink Internet"
-                width={140}
-                height={38}
+                width={160}
+                height={44}
                 className="object-contain"
               />
             </div>
