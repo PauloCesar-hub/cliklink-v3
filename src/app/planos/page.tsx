@@ -2,22 +2,12 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
 import { MessageCircle, Wifi, ChevronRight } from "lucide-react";
 import { Breadcrumb, PlanCard } from "@/components/ui/index";
 import { PLANOS } from "@/lib/planos";
 import { waMsg } from "@/lib/utils";
-import type { ChipSize } from "@/types";
 
 const internet = PLANOS.filter(p => p.categoria === "internet");
-
-type Tab = "sem-chip" | "15G" | "20G" | "25G";
-const TABS: { id: Tab; label: string }[] = [
-  { id: "sem-chip", label: "Só Internet" },
-  { id: "15G",      label: "+ Chip 15G"  },
-  { id: "20G",      label: "+ Chip 20G"  },
-  { id: "25G",      label: "+ Chip 25G"  },
-];
 
 const SPEEDS = [
   { v: "100", unit: "Megas" },
@@ -27,12 +17,6 @@ const SPEEDS = [
 ];
 
 export default function PlanosPage() {
-  const [tab, setTab] = useState<Tab>("sem-chip");
-
-  const filtered = internet.filter(p =>
-    tab === "sem-chip" ? !p.chip : p.chip === (tab as ChipSize)
-  );
-
   return (
     <>
       <Breadcrumb items={[{ label: "Início", href: "/" }, { label: "Planos" }]} />
@@ -70,27 +54,19 @@ export default function PlanosPage() {
         </div>
       </div>
 
-      {/* TABS */}
-      <div className="bg-[#0d0d0d] border-b border-[#1e1e1e] sticky top-16 z-30 px-6">
-        <div className="max-w-[1320px] mx-auto flex overflow-x-auto gap-1">
-          {TABS.map(t => (
-            <button key={t.id} onClick={() => setTab(t.id)}
-              className={`flex-shrink-0 px-5 py-4 text-sm font-bold border-b-2 transition-all whitespace-nowrap ${
-                tab === t.id
-                  ? "border-[#F47B20] text-[#F47B20]"
-                  : "border-transparent text-[#444] hover:text-[#888]"
-              }`}>
-              {t.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* PLANOS — mesmo layout da home */}
+      {/* PLANOS — todos juntos por velocidade, scroll horizontal */}
       <section className="bg-[#1a1a1a] border-b border-[#333] py-16">
+        <div className="max-w-[1320px] mx-auto px-6 mb-10">
+          <div className="text-center">
+            <div className="text-xs font-bold text-[#F47B20] uppercase tracking-widest mb-2">Escolha o seu plano</div>
+            <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-2">Todos os planos disponíveis</h2>
+            <p className="text-[#888]">Fibra óptica 100% · e-Saude incluso · Suporte local em Araraquara</p>
+          </div>
+        </div>
+
         <div className="flex flex-col gap-10">
           {SPEEDS.map(({ v, unit }) => {
-            const grupo = filtered.filter(p => p.velocidade === v);
+            const grupo = internet.filter(p => p.velocidade === v);
             if (!grupo.length) return null;
             return (
               <div key={v}>
