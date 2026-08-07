@@ -65,10 +65,10 @@ export default function HomePage() {
           {planGroups.map((group) => (
             <div key={group.speed}>
               {/* Speed header */}
-              <div className="max-w-[1320px] mx-auto px-6 mb-4">
-                <div className="flex items-baseline gap-2 pb-3 border-b border-[#333]">
-                  <span className="text-5xl font-black text-[#F47B20] leading-none">{group.speed}</span>
-                  <span className="text-lg font-bold text-[#666]">{group.unit}</span>
+              <div className="max-w-[1320px] mx-auto px-4 md:px-6 mb-3 md:mb-4">
+                <div className="flex items-baseline gap-2 pb-2 md:pb-3 border-b border-[#333]">
+                  <span className="text-4xl md:text-5xl font-black text-[#F47B20] leading-none">{group.speed}</span>
+                  <span className="text-base md:text-lg font-bold text-[#666]">{group.unit}</span>
                 </div>
               </div>
 
@@ -82,11 +82,11 @@ export default function HomePage() {
                   scrollSnapType: "x mandatory",
                 }}
               >
-                <div className="flex gap-5 px-6 mx-auto" style={{ width: "fit-content" }}>
+                <div className="flex gap-4 md:gap-5 px-4 md:px-6" style={{ width: "fit-content" }}>
                 {group.planos.map((plano) => (
                   <div
                     key={plano.id}
-                    className="flex-shrink-0 w-[300px]"
+                    className="flex-shrink-0 w-[260px] md:w-[300px]"
                     style={{ scrollSnapAlign: "start" }}
                   >
                     <PlanCard

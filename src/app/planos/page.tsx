@@ -22,24 +22,21 @@ export default function PlanosPage() {
       <Breadcrumb items={[{ label: "Início", href: "/" }, { label: "Planos" }]} />
 
       {/* HEADER */}
-      <div className="bg-[#0d0d0d] border-b border-[#1e1e1e] py-12 px-6">
-        <div className="max-w-[1320px] mx-auto flex flex-col md:flex-row md:items-end justify-between gap-6">
-          <div>
-            <div className="text-xs font-bold text-[#F47B20] uppercase tracking-widest mb-3">Planos internet</div>
-            <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-2">
-              Planos para moradores<br />
-              <span className="text-[#F47B20]">de condomínio</span>
-            </h1>
-            <p className="text-[#666] max-w-lg">
-              Fibra óptica 100%, e-Saude incluso e suporte humano local em Araraquara.
-            </p>
-          </div>
-          <div className="flex items-center gap-6 flex-shrink-0">
+      <div className="bg-[#0d0d0d] border-b border-[#1e1e1e] py-8 md:py-12 px-6">
+        <div className="max-w-[1320px] mx-auto">
+          <div className="text-xs font-bold text-[#F47B20] uppercase tracking-widest mb-3">Planos internet</div>
+          <h1 className="text-3xl md:text-5xl font-black tracking-tight mb-2">
+            Planos para moradores <span className="text-[#F47B20]">de condomínio</span>
+          </h1>
+          <p className="text-[#666] text-sm md:text-base max-w-lg">
+            Fibra óptica 100%, e-Saude incluso e suporte humano local em Araraquara.
+          </p>
+          <div className="hidden md:flex items-center gap-6 mt-5">
             <div className="flex items-center gap-2.5">
               <div className="relative w-10 h-10">
                 <Image src="/logos/logo-telemedicina.png" alt="e-Saude" fill className="object-contain" />
               </div>
-              <span className="text-xs text-[#555]">e-Saude</span>
+              <span className="text-xs text-[#555]">e-Saude incluso</span>
             </div>
             <div className="flex items-center gap-2.5">
               <div className="relative w-28 h-10">
@@ -55,30 +52,23 @@ export default function PlanosPage() {
       </div>
 
       {/* PLANOS — todos juntos por velocidade, scroll horizontal */}
-      <section className="bg-[#1a1a1a] border-b border-[#333] py-16">
-        <div className="max-w-[1320px] mx-auto px-6 mb-10">
-          <div className="text-center">
-            <div className="text-xs font-bold text-[#F47B20] uppercase tracking-widest mb-2">Escolha o seu plano</div>
-            <h2 className="text-3xl md:text-4xl font-black tracking-tight mb-2">Todos os planos disponíveis</h2>
-            <p className="text-[#888]">Fibra óptica 100% · e-Saude incluso · Suporte local em Araraquara</p>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-10">
+      <section className="bg-[#1a1a1a] border-b border-[#333] py-10 md:py-16">
+        <div className="flex flex-col gap-8 md:gap-10">
           {SPEEDS.map(({ v, unit }) => {
             const grupo = internet.filter(p => p.velocidade === v);
             if (!grupo.length) return null;
             return (
               <div key={v}>
                 {/* Speed header */}
-                <div className="max-w-[1320px] mx-auto px-6 mb-4">
-                  <div className="flex items-baseline gap-2 pb-3 border-b border-[#333]">
-                    <span className="text-5xl font-black text-[#F47B20] leading-none">{v}</span>
-                    <span className="text-lg font-bold text-[#666]">{unit}</span>
+                <div className="max-w-[1320px] mx-auto px-4 md:px-6 mb-3 md:mb-4">
+                  <div className="flex items-baseline gap-2 pb-2 md:pb-3 border-b border-[#333]">
+                    <span className="text-4xl md:text-5xl font-black text-[#F47B20] leading-none">{v}</span>
+                    <span className="text-base md:text-lg font-bold text-[#666]">{unit}</span>
+                    <span className="text-xs text-[#444] ml-1">{grupo.length} {grupo.length === 1 ? "plano" : "planos"}</span>
                   </div>
                 </div>
 
-                {/* Horizontal scroll row — idêntico à home */}
+                {/* Horizontal scroll row */}
                 <div
                   className="pb-2"
                   style={{
@@ -88,11 +78,11 @@ export default function PlanosPage() {
                     scrollSnapType: "x mandatory",
                   }}
                 >
-                  <div className="flex gap-5 px-6 mx-auto" style={{ width: "fit-content" }}>
+                  <div className="flex gap-4 md:gap-5 px-4 md:px-6" style={{ width: "fit-content" }}>
                     {grupo.map(plano => (
                       <div
                         key={plano.id}
-                        className="flex-shrink-0 w-[300px]"
+                        className="flex-shrink-0 w-[260px] md:w-[300px]"
                         style={{ scrollSnapAlign: "start" }}
                       >
                         <PlanCard
@@ -202,8 +192,8 @@ export default function PlanosPage() {
         </div>
       </section>
 
-      {/* TABELA */}
-      <section className="bg-[#0d0d0d] border-b border-[#1e1e1e] py-14 px-6">
+      {/* TABELA — só desktop */}
+      <section className="hidden md:block bg-[#0d0d0d] border-b border-[#1e1e1e] py-14 px-6">
         <div className="max-w-[1320px] mx-auto">
           <div className="text-xs font-bold text-[#F47B20] uppercase tracking-widest mb-2">Tabela completa</div>
           <h2 className="text-2xl font-black tracking-tight mb-6">Todos os {internet.length} planos disponíveis</h2>
