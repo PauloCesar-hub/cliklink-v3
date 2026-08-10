@@ -4,7 +4,6 @@ import Link from "next/link";
 import { SectionTag } from "@/components/ui/index";
 
 const CHANNELS_FEATURED = [
-  { name: "TV Globo",        logo: "/logos/globo.svg",           bg: "#1a1a2e" },
   { name: "SBT",             logo: "/logos/sbt.svg",             bg: "#111" },
   { name: "Record",          logo: "/logos/record.png",          bg: "#1a0000" },
   { name: "Band",            logo: "/logos/band.svg",            bg: "#0a1a3a" },
@@ -28,7 +27,7 @@ const CHANNELS_FEATURED = [
 
 const ALL_CHANNELS = [
   // Canais abertos / base
-  "TV GLOBO","SBT","RECORD","BAND","REDE TV!","TV CULTURA","TV SENADO","TV CÂMARA",
+  "SBT","RECORD","BAND","REDE TV!","TV CULTURA","TV SENADO","TV CÂMARA",
   "TV ESCOLA","RECORD NEWS","CANAL SAÚDE","FRANCE 24","FUTURA","ESPN","GOLF CHANNEL",
   "CANAL DO BOI","CANAL RURAL","COMBATE","FIGHT NETWORK","GOL TV","CANAL BRASIL",
   "CANAL DA MÚSICA","BRAVA TV","CINENEWS","STUDIO UNIVERSAL","SKY NEWS","VICE",
