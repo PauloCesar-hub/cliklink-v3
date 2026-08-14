@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     description: "De 100 Mega a 1 Giga. Fibra óptica pura. Suporte local humano.",
     type: "website",
     locale: "pt_BR",
-    url: "https://cliklink.com.br/araraquara",
+    url: "https://cliklink.com.br",
   },
 };
 

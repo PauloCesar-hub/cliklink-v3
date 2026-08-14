@@ -1,13 +1,20 @@
+"use client";
+
+import { useEffect } from "react";
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
 import { PORTAL_URL } from "@/lib/utils";
 
-export const metadata: Metadata = {
-  title: "Minha Conta — ClikLink Internet",
-  description: "Acesse sua conta ClikLink. Gerencie faturas, boletos e contratos.",
-};
-
-// This page immediately redirects to the customer portal
 export default function MinhaContaPage() {
-  redirect(PORTAL_URL);
+  useEffect(() => {
+    window.location.replace(PORTAL_URL);
+  }, []);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center text-center p-6">
+      <div>
+        <p className="text-[#888] mb-4">Redirecionando para a central do assinante...</p>
+        <a href={PORTAL_URL} className="btn btn-primary">Clique aqui se não for redirecionado</a>
+      </div>
+    </div>
+  );
 }

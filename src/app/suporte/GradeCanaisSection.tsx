@@ -101,9 +101,13 @@ export function GradeCanaisSection() {
         </div>
 
         <div className="flex flex-wrap gap-3 items-center">
-          <Link href="/assinar/tv-total" className="btn btn-primary">
+          <a
+            href="https://wa.me/551630148884?text=Ol%C3%A1%2C%20ClikLink%21%20Tenho%20interesse%20em%20contratar%20o%20pacote%20*TV%20Nova%20Total%20(YPlay)*%20%E2%80%94%20118%20canais%20%2B%203.000h%20de%20filmes.%20Podem%20me%20dar%20mais%20informa%C3%A7%C3%B5es%3F"
+            target="_blank" rel="noopener noreferrer"
+            className="btn btn-primary"
+          >
             Assinar TV Total — R$ 14,90/mês
-          </Link>
+          </a>
         </div>
         <p className="text-xs text-[#555] mt-3">* Grade sujeita a alterações. Canais podem variar conforme disponibilidade.</p>
       </div>

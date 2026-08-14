@@ -1,0 +1,74 @@
+Options -Indexes
+DirectoryIndex index.html
+
+# ── HTTPS ─────────────────────────────────────────────────────────────────────
+RewriteEngine On
+RewriteCond %{HTTPS} off
+RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [R=301,L]
+
+# ── WWW → non-WWW ─────────────────────────────────────────────────────────────
+RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+RewriteRule ^ https://%1%{REQUEST_URI} [R=301,L]
+
+# ── Redirects antigos /araraquara/* ───────────────────────────────────────────
+RewriteRule ^araraquara/?$ / [R=301,L]
+RewriteRule ^araraquara/sobre/?$ / [R=301,L]
+RewriteRule ^araraquara/condominios/?$ /condominios [R=301,L]
+RewriteRule ^araraquara/tv-hd/?$ /planos [R=301,L]
+RewriteRule ^araraquara/assine/?$ /planos [R=301,L]
+RewriteRule ^araraquara/atendimento/?$ /suporte [R=301,L]
+
+# ── Next.js static export: rotas sem extensão → /pasta/index.html ─────────────
+# Se o arquivo ou diretório existir, serve direto
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Tenta /rota/index.html (Next.js gera assim com output: export)
+RewriteCond %{REQUEST_FILENAME}/index.html -f
+RewriteRule ^(.+?)/?$ /$1/index.html [L]
+
+# ── 404 ───────────────────────────────────────────────────────────────────────
+ErrorDocument 404 /404.html
+
+# ── Compressão gzip ───────────────────────────────────────────────────────────
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css text/javascript
+  AddOutputFilterByType DEFLATE application/javascript application/json
+  AddOutputFilterByType DEFLATE image/svg+xml font/woff2
+</IfModule>
+
+# ── Cache de assets ───────────────────────────────────────────────────────────
+<IfModule mod_expires.c>
+  ExpiresActive On
+  # JS/CSS do Next.js têm hash no nome — cache longo seguro
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  # Imagens
+  ExpiresByType image/jpeg "access plus 3 months"
+  ExpiresByType image/png "access plus 3 months"
+  ExpiresByType image/svg+xml "access plus 3 months"
+  ExpiresByType image/webp "access plus 3 months"
+  # Fontes
+  ExpiresByType font/woff2 "access plus 1 year"
+  # HTML — sem cache (atualiza no deploy)
+  ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+
+# ── Headers de segurança ───────────────────────────────────────────────────────
+<IfModule mod_headers.c>
+  Header always set X-Frame-Options "DENY"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+  Header always set X-DNS-Prefetch-Control "on"
+  Header always set Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+  # CSP: permite scripts do Meta Pixel (connect.facebook.net) e do Google Analytics (googletagmanager.com)
+  # e fetch do ViaCEP no formulário de endereço
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline' https://connect.facebook.net https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https://www.facebook.com; connect-src 'self' https://viacep.com.br https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net https://connect.facebook.net https://www.facebook.com; frame-ancestors 'none'"
+</IfModule>
+
+# ── CORS para fontes ───────────────────────────────────────────────────────────
+<FilesMatch "\.(woff2?|ttf|otf|eot)$">
+  Header set Access-Control-Allow-Origin "*"
+</FilesMatch>
