@@ -18,14 +18,18 @@ RewriteRule ^araraquara/tv-hd/?$ /planos [R=301,L]
 RewriteRule ^araraquara/assine/?$ /planos [R=301,L]
 RewriteRule ^araraquara/atendimento/?$ /suporte [R=301,L]
 
-# ── Next.js static export: rotas sem extensão → /pasta/index.html ─────────────
-# Se o arquivo ou diretório existir, serve direto
+# ── Next.js static export: rotas sem extensão → arquivo.html ─────────────────
+# Se o arquivo ou diretório existir exatamente, serve direto
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d
 RewriteRule ^ - [L]
 
-# Tenta /rota/index.html (Next.js gera assim com output: export)
-RewriteCond %{REQUEST_FILENAME}/index.html -f
+# Tenta /rota.html  →  serve celular.html, planos.html, assinar/100-mega.html, etc.
+RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI}.html -f
+RewriteRule ^(.+?)/?$ /$1.html [L]
+
+# Fallback: /rota/index.html (caso trailingSlash seja ativado futuramente)
+RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI}/index.html -f
 RewriteRule ^(.+?)/?$ /$1/index.html [L]
 
 # ── 404 ───────────────────────────────────────────────────────────────────────
