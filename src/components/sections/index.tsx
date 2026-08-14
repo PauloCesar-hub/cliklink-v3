@@ -316,20 +316,22 @@ export function ContactSection() {
     resolver: zodResolver(contatoSchema),
   });
 
-  async function onSubmit(data: ContatoSchema) {
-    setStatus("loading");
-    try {
-      const res = await fetch("/api/contato", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!res.ok) throw new Error("server error");
-      setStatus("success");
-      reset();
-    } catch {
-      setStatus("error");
-    }
+  function onSubmit(data: ContatoSchema) {
+    const msg = [
+      `📩 *Contato pelo site — ClikLink*`,
+      ``,
+      `👤 *Nome:* ${data.nome}`,
+      `📧 *E-mail:* ${data.email}`,
+      data.telefone ? `📞 *Telefone:* ${data.telefone}` : null,
+      `📌 *Assunto:* ${data.assunto}`,
+      ``,
+      `💬 *Mensagem:*`,
+      data.mensagem,
+    ].filter(Boolean).join("\n");
+
+    window.open(`https://wa.me/551630148884?text=${encodeURIComponent(msg)}`, "_blank");
+    setStatus("success");
+    reset();
   }
 
   return (
@@ -373,8 +375,8 @@ export function ContactSection() {
             {status === "success" ? (
               <div className="text-center py-8">
                 <CheckCircle size={48} className="text-green-400 mx-auto mb-3" />
-                <h3 className="font-bold text-white mb-1">Mensagem enviada!</h3>
-                <p className="text-sm text-[#888]">Retornaremos em até 1 dia útil.</p>
+                <h3 className="font-bold text-white mb-1">WhatsApp aberto!</h3>
+                <p className="text-sm text-[#888]">Clique em Enviar na conversa para concluir.</p>
                 <button onClick={() => setStatus("idle")} className="btn btn-outline btn-sm mt-4">Enviar outra</button>
               </div>
             ) : (
@@ -410,8 +412,8 @@ export function ContactSection() {
                     <AlertCircle size={16} /> Erro ao enviar. Tente pelo WhatsApp.
                   </div>
                 )}
-                <button type="submit" disabled={status === "loading"} className="btn btn-primary btn-lg w-full justify-center mt-1">
-                  {status === "loading" ? "Enviando..." : "Enviar mensagem"}
+                <button type="submit" className="btn btn-primary btn-lg w-full justify-center mt-1">
+                  Enviar pelo WhatsApp
                 </button>
               </form>
             )}
