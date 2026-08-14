@@ -61,12 +61,12 @@ export function PlanCard({ plano, showOptLabel, variant = "primary" }: PlanCardP
     >
       {(showOptLabel || plano.destaque) && (
         <div className={cn(
-          "text-[11px] font-bold tracking-wide uppercase mb-3 px-2.5 py-1 rounded-full self-start border",
+          "text-xs font-bold tracking-wide uppercase mb-3 px-3 py-1.5 rounded-full self-start border",
           isChipLabel
-            ? "text-[#a78bfa] bg-[rgba(124,58,237,0.15)] border-[rgba(124,58,237,0.4)]"
+            ? "text-[#7c3aed] bg-white border-white"
             : plano.featured
-            ? "text-[#F47B20] bg-[rgba(244,123,32,0.1)] border-[rgba(244,123,32,0.3)]"
-            : "text-[#888] border-[#333]"
+            ? "text-white bg-[rgba(244,123,32,0.15)] border-[rgba(244,123,32,0.4)]"
+            : "text-white border-[#444]"
         )}>
           {showOptLabel || plano.destaque}
         </div>
